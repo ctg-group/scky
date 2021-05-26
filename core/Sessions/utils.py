@@ -1,38 +1,43 @@
-
 from core.colors import *
-from .sessions import *
+def parse_args(string):
+  result = [];tmp0="";pass_spec = False;pass_space = False
+  if not " " in string: return [string]
+  for c in string:
+    if c == " ":
+      if pass_space: 
+        tmp0+=' '
+      else:
+        if tmp0!='':
+          result.append(tmp0)
+          tmp0=''
+    elif c == '"':
+      if pass_spec:
+        pass_spec = False
+        tmp0+='"'
+      else:
+        if pass_space:
+          pass_space = False
+          result.append(tmp0)
+          tmp0=''
+        else:pass_space = True
+    elif c == '\\':
+      if pass_spec: tmp0+='\\'
+      else: pass_spec = True
+    else: tmp0+=c
+  if tmp0!='':result.append(tmp0)
+  return result
 
-def last_session():
-  sessions=Session.load_sessions_('.last_session')
-  if len(sessions)==0:return None
-  else:return sessions[0]
+def question_yn(question):
+  inp = input(question+' (y\\n): ').lower()
+  if inp[0]=='y': return True
+  elif inp[0]=='n': return False
+  else:
+    print(f'[{R}-{N}] Please, retry!')
+    question_yn(question)
 
-def ShowSessions():
-  sessions=Session.load_sessions()
-  print(f'\n{R} ALL SESSIONS:{N}')
-  if len(sessions)==0:
-    print(f'    {R}Not have avaible sessions!')
-  for s in sessions:
-    sid=s.id
-    sdn=s.display_name
-    print(f'    {G}ID:{sid} DISPLAY NAME: {sdn}{N}')
-
-def OpenSessionByID():
-  sessions=Session.load_sessions()
-  print(f'\n{R}INPUT ID OF SESSION FOR OPEN.{N}')
-  p=f' {G}S C K Y \ S E S S I O N {R}> {N}'
-  while True:
-    inp=input(p)
-    try:_=int(inp)
-    except:print(f'[{R}-{N}] ENTER NUMBER!')
-    for s in sessions:
-      if s.id==int(inp):
-        with open('.last_session','w+') as f:f.write('')
-        s.save_('.last_session')
-        s.conn.EnterController()
-        break
-
-def LoadLastSession():
-  ls_ = last_session()
-  if ls_!=None:Session.conn.EnterController()
-  else:print('No last session!')
+def clear():
+  import sys, os
+  if sys.platform.lower().startswith('win'):
+    os.system('cls')
+  else:
+    os.system('clear')
